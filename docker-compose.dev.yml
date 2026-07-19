@@ -7,6 +7,15 @@ services:
       dockerfile: Dockerfile
     image: frontend:dev
     container_name: frontend-dev
-    ports:
-      - "8081:80"
     restart: always
+    expose:
+      - "80"
+    environment:
+      - VIRTUAL_HOST=dev.devplayground.my.id
+      - LETSENCRYPT_HOST=dev.devplayground.my.id
+    networks:
+      - proxy-tier
+
+networks:
+  proxy-tier:
+    external: true

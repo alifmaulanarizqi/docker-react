@@ -7,6 +7,15 @@ services:
       dockerfile: Dockerfile
     image: frontend:staging
     container_name: frontend-staging
-    ports:
-      - "8080:80"
     restart: always
+    expose:
+      - "80"
+    environment:
+      - VIRTUAL_HOST=staging.devplayground.my.id
+      - LETSENCRYPT_HOST=staging.devplayground.my.id
+    networks:
+      - proxy-tier
+
+networks:
+  proxy-tier:
+    external: true
