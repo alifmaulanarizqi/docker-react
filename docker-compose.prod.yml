@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   frontend-prod:
-    image: alifmaulanarizqi/react-frontend:latest
-    container_name: react-frontend-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: frontend:latest
+    container_name: frontend-prod
     ports:
-      # Port 80 di VPS akan diarahkan ke port 80 (Nginx) di dalam container
       - "80:80"
     restart: always
