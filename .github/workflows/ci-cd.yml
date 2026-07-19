@@ -26,8 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build & Deploy Dev Environment
-        # Flag -p memberikan nama proyek unik agar container tidak saling tabrakan/menimpa
-        run: docker-compose -p frontend-dev -f docker-compose.dev.yml up -d --build
+        run: docker compose -p frontend-dev -f docker-compose.dev.yml up -d --build
 
   deploy-staging:
     name: Deploy to Staging
@@ -37,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build & Deploy Staging Environment
-        run: docker-compose -p frontend-staging -f docker-compose.staging.yml up -d --build
+        run: docker compose -p frontend-staging -f docker-compose.staging.yml up -d --build
 
   deploy-prod:
     name: Deploy to Production
@@ -47,4 +46,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build & Deploy Production Environment
-        run: docker-compose -p frontend-prod -f docker-compose.prod.yml up -d --build
+        run: docker compose -p frontend-prod -f docker-compose.prod.yml up -d --build
