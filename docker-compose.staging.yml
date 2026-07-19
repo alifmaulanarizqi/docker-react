@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   frontend-staging:
-    image: alifmaulanarizqi/react-frontend:staging
-    container_name: react-frontend-staging
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: frontend:staging
+    container_name: frontend-staging
     ports:
-      # Port 8080 di VPS akan diarahkan ke port 80 (Nginx) di dalam container
       - "8080:80"
     restart: always

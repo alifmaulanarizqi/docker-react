@@ -1,7 +1,6 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (Self-Hosted)
 
 on:
-  # 'push' ke sebuah branch akan mendeteksi commit langsung maupun hasil MERGE (Pull Request)
   push:
     branches:
       - dev
@@ -11,118 +10,41 @@ on:
 jobs:
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
       - name: Build Test Image
         run: docker build -t react-test -f Dockerfile.dev .
       - name: Run Tests
-        run: docker run -e CI=true react-test npm test
+        run: docker run -e CI=true --rm react-test npm test
 
   deploy-dev:
-    name: Deploy to Dev VPS
+    name: Deploy to Dev
     needs: test
     if: github.ref == 'refs/heads/dev'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      
-      - name: Build & Push Image
-        run: |
-          docker build -t alifmaulanarizqi/react-frontend:dev .
-          docker push alifmaulanarizqi/react-frontend:dev
-
-      - name: Copy Compose file to VPS
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "docker-compose.dev.yml"
-          target: "/home/${{ secrets.VPS_USERNAME }}/app/dev"
-
-      - name: Execute Docker Compose on VPS
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /home/${{ secrets.VPS_USERNAME }}/app/dev
-            docker pull alifmaulanarizqi/react-frontend:dev
-            docker-compose -f docker-compose.dev.yml up -d
+      - name: Build & Deploy Dev Environment
+        # Flag -p memberikan nama proyek unik agar container tidak saling tabrakan/menimpa
+        run: docker-compose -p frontend-dev -f docker-compose.dev.yml up -d --build
 
   deploy-staging:
-    name: Deploy to Staging VPS
+    name: Deploy to Staging
     needs: test
     if: github.ref == 'refs/heads/staging'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      
-      - name: Build & Push Image
-        run: |
-          docker build -t alifmaulanarizqi/react-frontend:staging .
-          docker push alifmaulanarizqi/react-frontend:staging
-
-      - name: Copy Compose file to VPS
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "docker-compose.staging.yml"
-          target: "/home/${{ secrets.VPS_USERNAME }}/app/staging"
-
-      - name: Execute Docker Compose on VPS
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /home/${{ secrets.VPS_USERNAME }}/app/staging
-            docker pull alifmaulanarizqi/react-frontend:staging
-            docker-compose -f docker-compose.staging.yml up -d
+      - name: Build & Deploy Staging Environment
+        run: docker-compose -p frontend-staging -f docker-compose.staging.yml up -d --build
 
   deploy-prod:
-    name: Deploy to Production VPS
+    name: Deploy to Production
     needs: test
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      
-      - name: Build & Push Image
-        run: |
-          docker build -t alifmaulanarizqi/react-frontend:latest .
-          docker push alifmaulanarizqi/react-frontend:latest
-
-      - name: Copy Compose file to VPS
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "docker-compose.prod.yml"
-          target: "/home/${{ secrets.VPS_USERNAME }}/app/prod"
-
-      - name: Execute Docker Compose on VPS
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /home/${{ secrets.VPS_USERNAME }}/app/prod
-            docker pull alifmaulanarizqi/react-frontend:latest
-            docker-compose -f docker-compose.prod.yml up -d
+      - name: Build & Deploy Production Environment
+        run: docker-compose -p frontend-prod -f docker-compose.prod.yml up -d --build
