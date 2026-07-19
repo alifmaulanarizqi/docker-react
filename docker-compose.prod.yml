@@ -12,7 +12,6 @@ services:
       - "80"
     environment:
       - VIRTUAL_HOST=devplayground.my.id,www.devplayground.my.id
-      - LETSENCRYPT_HOST=devplayground.my.id,www.devplayground.my.id
     networks:
       - proxy-tier
 

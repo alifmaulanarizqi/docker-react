@@ -12,7 +12,6 @@ services:
       - "80"
     environment:
       - VIRTUAL_HOST=staging.devplayground.my.id
-      - LETSENCRYPT_HOST=staging.devplayground.my.id
     networks:
       - proxy-tier
 
