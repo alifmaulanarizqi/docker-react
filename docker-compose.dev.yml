@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  frontend-dev:
+    image: alifmaulanarizqi/react-frontend:dev
+    container_name: react-frontend-dev
+    ports:
+      # Port 8081 di VPS akan diarahkan ke port 80 (Nginx) di dalam container dev
+      - "8081:80"
+    restart: always
