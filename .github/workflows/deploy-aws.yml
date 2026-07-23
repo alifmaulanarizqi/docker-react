@@ -1,0 +1,30 @@
+name: Deploy to AWS Elastic Beanstalk (Prod)
+
+on:
+  push:
+    branches:
+      - master 
+jobs:
+  deploy:
+    name: Build & Deploy to AWS
+    runs-on: self-hosted # Menggunakan VPS Anda untuk menghemat limit GitHub Actions
+    
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      - name: Create ZIP deployment package
+        # Ponytail: Zip kode apa adanya. EB akan otomatis mem-build Dockerfile di dalamnya.
+        # Kita abaikan file git dan node_modules agar ukuran zip kecil.
+        run: zip -r deploy.zip . -x "*.git*" "node_modules/*"
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: "frontend"    
+          environment_name: "frontend-env" 
+          version_label: "ver-${{ github.sha }}"
+          region: "us-east-1"
+          deployment_package: deploy.zip
